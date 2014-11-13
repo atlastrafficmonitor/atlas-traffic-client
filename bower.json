@@ -2,6 +2,9 @@
   "name": "atlas-traffic-monitor",
   "private": true,
   "dependencies": {
-    "bootstrap-sass-official": "~3.2.0"
+    "bootstrap-sass-official": "~3.2.0",
+    "timbre": "*",
+    "d3": "~3.4.13",
+    "lodash": "~2.4.1"
   }
 }
