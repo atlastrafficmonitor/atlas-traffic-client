@@ -1,3 +1,5 @@
+user "strict";
+
 var NoteIterator = function (song) {
   var count = 0;
 
@@ -6,25 +8,40 @@ var NoteIterator = function (song) {
   };
 };
 
-var mySong = {
-  name: 'Weird',
-  notes: [
-    440, 440, 440, 440, 440, 440, 440,
-    523.3, 349.2, 392, 440, 466.2, 466.2,
-    466.2, 446, 446, 440, 440, 440, 440,
-    440, 392, 392, 440, 392, 523.3
-  ]
+var notesMap = {
+  "E" : 329.6,
+  "G" : 392.0,
+  "C" : 261.6,
+  "D" : 293.7,
+  "F" : 349.2
 };
 
-var noteIterator = NoteIterator(mySong);
-
-var conn = new WebSocket("wss://ws.chain.com/v2/notifications");
-
-conn.onopen = function (ev) {
-  var req = {type: "new-transaction", block_chain: "bitcoin"};
-  conn.send(JSON.stringify(req));
+var jingleBells = {
+  name: "Jingle Bells",
+  notes: _.map([
+    "E","E","E","E","E","E","E","G","C","D","E",
+    "F","F","F","F","F","E","E","E","E","E","D","D","E","D",
+    "E","E","E","E","E","E","E","G","C","D","E",
+    "F","F","F","F","F","E","E","E","E","G","G","F","D","C"
+  ], function(n) { return notesMap[n]; })
 };
 
-conn.onmessage = function (ev) {
-  T("pluck", {freq:mySong.notes[noteIterator()], mul:0.5}).bang().play();
-};
+var noteIterator = NoteIterator(jingleBells);
+
+$(function() {
+  $(window).keypress(function(e) {
+    var key = e.which;
+    T("pluck", {freq:jingleBells.notes[noteIterator()], mul:0.5}).bang().play();
+  });
+});
+
+// var conn = new WebSocket("wss://ws.chain.com/v2/notifications");
+//
+// conn.onopen = function (ev) {
+//   var req = {type: "new-transaction", block_chain: "bitcoin"};
+//   conn.send(JSON.stringify(req));
+// };
+//
+// conn.onmessage = function (ev) {
+//   T("pluck", {freq:jingleBells.notes[noteIterator()], mul:0.5}).bang().play();
+// };
