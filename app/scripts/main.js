@@ -1,4 +1,4 @@
-user "strict";
+"use strict";
 
 var NoteIterator = function (song) {
   var count = 0;
@@ -36,12 +36,12 @@ $(function() {
 });
 
 // var conn = new WebSocket("wss://ws.chain.com/v2/notifications");
-//
-// conn.onopen = function (ev) {
-//   var req = {type: "new-transaction", block_chain: "bitcoin"};
-//   conn.send(JSON.stringify(req));
-// };
-//
-// conn.onmessage = function (ev) {
-//   T("pluck", {freq:jingleBells.notes[noteIterator()], mul:0.5}).bang().play();
-// };
+var atlasTrafficServer = '192.168.50.4'
+var conn = new WebSocket("ws://" + atlasTrafficServer + ":8764");
+
+conn.onopen = function (ev) { return; };
+
+conn.onmessage = function (ev) {
+  T("pluck", {freq:jingleBells.notes[noteIterator()], mul:0.5}).bang().play();
+  console.log(ev);
+};
