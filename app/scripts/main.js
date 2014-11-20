@@ -28,16 +28,8 @@ var jingleBells = {
 
 var noteIterator = NoteIterator(jingleBells);
 
-$(function() {
-  $(window).keypress(function(e) {
-    var key = e.which;
-    T("pluck", {freq:jingleBells.notes[noteIterator()], mul:0.5}).bang().play();
-  });
-});
-
-// var conn = new WebSocket("wss://ws.chain.com/v2/notifications");
 var atlasTrafficServer = '192.168.50.4'
-var conn = new WebSocket("ws://" + atlasTrafficServer + ":8764");
+var conn = new WebSocket("ws://" + atlasTrafficServer + ":8765");
 
 conn.onopen = function (ev) { return; };
 
