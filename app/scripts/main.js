@@ -34,6 +34,17 @@ var output = '';
 conn.onopen = function (ev) { return; };
 
 conn.onmessage = function (ev) {
+    var msec = timbre.timevalue("BPM120 L16");
+    var osc  = T("saw");
+    var env  = T("env", {table:[0.2, [1, msec * 48], [0.2, msec * 16]]});
+    var gen  = T("OscGen", {osc:osc, env:env, mul:0.5});
+
+    var pan   = T("pan", gen);
+    var synth = pan;
+
+    synth = T("+saw", {freq:(msec * 2)+"ms", add:0.5, mul:0.85}, synth);
+    synth = T("lpf" , {cutoff:800, Q:12}, synth);
+    synth = T("reverb", {room:0.95, damp:0.1, mix:0.75}, synth);
     /*
     timbre.rec(function(output) {
         var pluck = T("pluck", {freq:jingleBells.notes[noteIterator()], mul:0.5}).bang();
@@ -44,9 +55,10 @@ conn.onmessage = function (ev) {
             T("pan", {pos:-0.6}, L), T("pan", {pos:+0.6}, L)
         ).play();
     })
-    */
+
+
     timbre.rec(function(output) {
-        var midis = [69, 71, 72, 76, 69, 71, 72, 76]//.scramble();
+        var midis = [69]//.scramble();
         var msec  = timbre.timevalue("bpm120 l8");
         var synth = T("OscGen", {env:T("perc", {r:msec, ar:true})});
         T("interval", {interval:msec}, function(count) {
@@ -59,15 +71,21 @@ conn.onmessage = function (ev) {
 
         output.send(synth);
         }).then(function(result) {
-          var L = T("buffer", {buffer:result, loop:true});
-          var R = T("buffer", {buffer:result, loop:true});
+          var L = T("buffer", {buffer:result, loop:false});
+          var R = T("buffer", {buffer:result, loop:false});
           var num = 400;
           var duration = L.duration;
           R.pitch = (duration * (num - 1)) / (duration * num);
+          /*T("timeout", {timeout:1000}).on("ended", function() {
+                this.stop();
+          }).set({buddies:L}).start();
+
           T("reverb", {room:0.9, damp:0.2, mix:0.45},
           //T("delay", {time:"bpm120 l16", fb:0.1, cross:true},
               T("pan", {pos:-0.6}, L), T("pan", {pos:+0.6}, R)
+
           ).play();
     });
+    */
 };
 
