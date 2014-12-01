@@ -3,6 +3,7 @@
   "private": true,
   "dependencies": {
     "lodash": "~2.4.1",
-    "paper": "~0.9.21"
+    "paper": "~0.9.21",
+    "timbre": "https://raw.githubusercontent.com/mohayonao/timbre.js/master/timbre.dev.js"
   }
 }
