@@ -7,6 +7,9 @@
     <script type="text/javascript" src="scripts/paper-full.min.js"></script>
     <script type="text/paperscript" canvas="canvas">
     // kynd.info 2014
+
+    var numPeople = parseInt(Math.random() * 60);
+
     function Ball(r, p, v) {
         this.radius = r;
         this.point = p;
@@ -18,7 +21,7 @@
         this.sidePoints = [];
         this.path = new Path({
             fillColor: {
-                hue: .8 * 360,
+                hue: (.7 + (numPeople/60*.3)) * 360,
                 saturation: 1,
                 brightness: 1
             },
@@ -117,17 +120,19 @@
         }
     };
 
+
     //--------------------- main ---------------------
 
+setTimeout(function(){location.reload()},10000);
     var balls = [];
-    var numBalls = 10;
+    var numBalls = numPeople;
     for (var i = 0; i < numBalls; i++) {
         var position = Point.random() * view.size;
         var vector = new Point({
             angle: 360 * Math.random(),
-            length: .1 * 10
+            length: numPeople/60 * 10
         });
-        var radius = .5 * 60 + 60;
+        var radius = 1-(numPeople/60) * 60 + 60;
         balls.push(new Ball(radius, position, vector));
     }
 
@@ -172,31 +177,68 @@ var text = new PointText(new Point(size.width/2, size.height/3));
 text.justification = 'center';
 text.fillColor = 'white';
 text.fontSize = 40;
-text.content = 'Number of People in the Room: 48';
+text.content = 'Number of People in Room: ' + numPeople;
 
-var text = new PointText(new Point(size.width/10, 9*size.height/10));
+var text = new PointText(new Point(size.width/10, 16*size.height/20));
 text.justification = 'center';
 text.fillColor = 'white';
 text.fontSize = 20;
 text.content = '2:00';
 
-var text = new PointText(new Point(3*size.width/10, 9*size.height/10));
+var text = new PointText(new Point(3*size.width/10, 16*size.height/20));
 text.justification = 'center';
 text.fillColor = 'white';
 text.fontSize = 20;
 text.content = '3:00';
 
-var text = new PointText(new Point(7*size.width/10, 9*size.height/10));
+var text = new PointText(new Point(7*size.width/10, 16*size.height/20));
 text.justification = 'center';
 text.fillColor = 'white';
 text.fontSize = 20;
 text.content = '5:00';
 
-var text = new PointText(new Point(9*size.width/10, 9*size.height/10));
+var text = new PointText(new Point(9*size.width/10, 16*size.height/20));
 text.justification = 'center';
 text.fillColor = 'white';
 text.fontSize = 20;
 text.content = '6:00';
+
+var text = new PointText(new Point(size.width/10, 18*size.height/20));
+text.justification = 'center';
+text.fillColor = 'white';
+text.fontSize = 30;
+text.content = parseInt(Math.random()*60);
+
+var text = new PointText(new Point(3*size.width/10, 18*size.height/20));
+text.justification = 'center';
+text.fillColor = 'white';
+text.fontSize = 30;
+text.content = parseInt(Math.random()*60);
+
+var text = new PointText(new Point(7*size.width/10, 18*size.height/20));
+text.justification = 'center';
+text.fillColor = 'white';
+text.fontSize = 30;
+text.content = parseInt(Math.random()*60);
+
+var text = new PointText(new Point(9*size.width/10, 18*size.height/20));
+text.justification = 'center';
+text.fillColor = 'white';
+text.fontSize = 30;
+text.content = parseInt(Math.random()*60);
+
+
+var text = new PointText(new Point(5*size.width/10, 16*size.height/20));
+text.justification = 'center';
+text.fillColor = 'white';
+text.fontSize = 15;
+text.content = 'Less Crowded At:';
+
+var text = new PointText(new Point(5*size.width/10, 18*size.height/20));
+text.justification = 'center';
+text.fillColor = 'green';
+text.fontSize = 30;
+text.content = parseInt(Math.random()*12) + ':00';
 
 
     </script>
