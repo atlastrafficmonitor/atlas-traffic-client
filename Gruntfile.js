@@ -251,21 +251,32 @@ module.exports = function (grunt) {
     // Copies remaining files to places other tasks can use
     copy: {
       dist: {
-        files: [{
-          expand: true,
-          dot: true,
-          cwd: '<%= config.app %>',
-          dest: '<%= config.dist %>',
-          src: [
-            '*.{ico,png,txt}',
-            'images/{,*/}*.webp',
-            '{,*/}*.html',
-            'styles/fonts/{,*/}*.*'
-          ]
-        }, {
-          src: 'node_modules/apache-server-configs/dist/.htaccess',
-          dest: '<%= config.dist %>/.htaccess'
-        }]
+        files:
+          [
+            {
+              expand: true,
+              dot: true,
+              cwd: '<%= config.app %>',
+              dest: '<%= config.dist %>',
+              src: [
+                '*.{ico,png,txt}',
+                'images/{,*/}*.webp',
+                '{,*/}*.html',
+                'scripts/{,*/}*.js',
+                'styles/**/*'
+              ]
+          },
+          {
+            src: 'node_modules/apache-server-configs/dist/.htaccess',
+            dest: '<%= config.dist %>/.htaccess'
+          },
+          {
+            expand: true,
+            dot: true,
+            src: 'bower_components/**/*',
+            dest: '<%= config.dist %>'
+          }
+        ]
       },
       styles: {
         expand: true,
@@ -320,10 +331,7 @@ module.exports = function (grunt) {
     'concurrent:dist',
     'autoprefixer',
     'concat',
-    'cssmin',
-    'uglify',
     'copy:dist',
-    'rev',
     'usemin',
     'htmlmin'
   ]);
