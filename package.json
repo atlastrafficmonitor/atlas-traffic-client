@@ -1,5 +1,11 @@
 {
-  "name": "atlas-traffic-monitor",
+  "name": "atlas-traffic-client",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/atlastrafficmonitor/atlas-traffic-client.git"
+  },
+  "description": "AV installation for monitoring traffic. CSCI 4830.",
+  "license": "MIT",
   "devDependencies": {
     "apache-server-configs": "^2.7.1",
     "grunt": "^0.4.5",
