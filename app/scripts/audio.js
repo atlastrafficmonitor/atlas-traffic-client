@@ -26,9 +26,25 @@ var jingleBells = {
   ], function(n) { return notesMap[n]; })
 };
 
+var Note = function () {
+    var pluck = new T('pluck', {freq:jingleBells.notes[noteIterator()], mul:0.5}).bang();
+    /* If we want an adsr filter
+    var env = T("adsr", {a:200,d:500,s:4.0,r:500}, pluck).on("ended", function() {
+    this.pause();
+    }).bang();
+    var timeout = T("timeout", {timeout:1500}, function() {
+        env.release();
+        timeout.stop();
+    }).start();
+    */
+    var delay = new T("delay", {time:1250,fb:0.4, mix:.2}, pluck);
+    var verb = new T('reverb',{room:0.9, damp:0.9, mix:0.25},delay);
+    return verb;
+};
+
 var noteIterator = new NoteIterator(jingleBells);
 
-var atlasTrafficServer = '192.168.50.4';
+var atlasTrafficServer = '0.0.0.0';
 var conn = new WebSocket('ws://' + atlasTrafficServer + ':8765');
 
 conn.onopen = function (ev) {
@@ -37,6 +53,9 @@ conn.onopen = function (ev) {
 };
 
 conn.onmessage = function (ev) {
-  new T('pluck', {freq:jingleBells.notes[noteIterator()], mul:0.5}).bang().play();
-  console.log(ev);
+    var note = Note();
+    note.play();
+    console.log(ev);
 };
+
+
