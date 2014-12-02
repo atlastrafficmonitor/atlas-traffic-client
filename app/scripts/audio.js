@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 var NoteIterator = function (song) {
   var count = 0;
@@ -9,100 +9,51 @@ var NoteIterator = function (song) {
 };
 
 var notesMap = {
-  "E" : 329.6,
-  "G" : 392.0,
-  "C" : 261.6,
-  "D" : 293.7,
-  "F" : 349.2
+  'E' : 329.6,
+  'G' : 392.0,
+  'C' : 261.6,
+  'D' : 293.7,
+  'F' : 349.2
 };
 
 var jingleBells = {
-  name: "Jingle Bells",
+  name: 'Jingle Bells',
   notes: _.map([
-    "E","E","E","E","E","E","E","G","C","D","E",
-    "F","F","F","F","F","E","E","E","E","E","D","D","E","D",
-    "E","E","E","E","E","E","E","G","C","D","E",
-    "F","F","F","F","F","E","E","E","E","G","G","F","D","C"
+    'E','E','E','E','E','E','E','G','C','D','E',
+    'F','F','F','F','F','E','E','E','E','E','D','D','E','D',
+    'E','E','E','E','E','E','E','G','C','D','E',
+    'F','F','F','F','F','E','E','E','E','G','G','F','D','C'
   ], function(n) { return notesMap[n]; })
 };
 
-var noteIterator = NoteIterator(jingleBells);
-
-var atlasTrafficServer = '0.0.0.0'
-var conn = new WebSocket("ws://" + atlasTrafficServer + ":8765");
-var output = '';
-conn.onopen = function (ev) { return; };
-
-//conn.onmessage = function (ev) {
-    var pattern = new sc.Pshuf(sc.series(12), Infinity);
-    var scale   = new sc.Scale.major();
-    var chords  = [
-      [0, 1, 4], [0, 1, 5], [0, 1, 6],
-      [0, 2, 6], [0, 2, 5], [0, 2, 4],
-      [0, 3, 6], [0, 3, 5], [0, 3, 4]
-    ];
-
-    var msec = timbre.timevalue("BPM120 L16");
-    var osc  = T("saw");
-    var env  = T("env", {table:[0.2, [1, msec * 48], [0.2, msec * 16]]});
-    var gen  = T("OscGen", {osc:osc, env:env, mul:0.5});
-
-    var pan   = T("pan", gen);
-    var synth = pan;
-
-    synth = T("+saw", {freq:(msec * 2)+"ms", add:0.5, mul:0.85}, synth);
-    synth = T("lpf" , {cutoff:800, Q:12}, synth);
-    synth = T("reverb", {room:0.95, damp:0.1, mix:0.75}, synth);
-
-    T("interval", {interval:msec * 64}, function() {
-          var root = pattern.next();
-            chords.choose().forEach(function(i) {
-                    gen.noteOn(scale.wrapAt(root + i) +60, 80);
-                      });
-                        pan.pos.value = Math.random() * 2 - 1;
-    }).set({buddies:synth}).start();
-
-    /*
-    timbre.rec(function(output) {
-        var pluck = T("pluck", {freq:jingleBells.notes[noteIterator()], mul:0.5}).bang();
-        output.send(pluck);
-    }).then(function(result) {
-        var L = T("buffer", {buffer:result, loop:false});
-        T("reverb", {room:0.9, damp:0.2, mix:0.45},
-            T("pan", {pos:-0.6}, L), T("pan", {pos:+0.6}, L)
-        ).play();
-    })
-
-
-    timbre.rec(function(output) {
-        var midis = [69]//.scramble();
-        var msec  = timbre.timevalue("bpm120 l8");
-        var synth = T("OscGen", {env:T("perc", {r:msec, ar:true})});
-        T("interval", {interval:msec}, function(count) {
-            if (count < midis.length) {
-                synth.noteOn(midis[count], 100);
-            } else {
-                output.done();
-            }
-        }).start();
-
-        output.send(synth);
-        }).then(function(result) {
-          var L = T("buffer", {buffer:result, loop:false});
-          var R = T("buffer", {buffer:result, loop:false});
-          var num = 400;
-          var duration = L.duration;
-          R.pitch = (duration * (num - 1)) / (duration * num);
-          /*T("timeout", {timeout:1000}).on("ended", function() {
-                this.stop();
-          }).set({buddies:L}).start();
-
-          T("reverb", {room:0.9, damp:0.2, mix:0.45},
-          //T("delay", {time:"bpm120 l16", fb:0.1, cross:true},
-              T("pan", {pos:-0.6}, L), T("pan", {pos:+0.6}, R)
-
-          ).play();
-    });
+var Note = function () {
+    var pluck = new T('pluck', {freq:jingleBells.notes[noteIterator()], mul:0.5}).bang();
+    /* If we want an adsr filter
+    var env = T("adsr", {a:200,d:500,s:4.0,r:500}, pluck).on("ended", function() {
+    this.pause();
+    }).bang();
+    var timeout = T("timeout", {timeout:1500}, function() {
+        env.release();
+        timeout.stop();
+    }).start();
     */
-//};
+    var delay = new T("delay", {time:1250,fb:0.4, mix:.2}, pluck);
+    var verb = new T('reverb',{room:0.9, damp:0.9, mix:0.25},delay);
+    return verb;
+};
 
+var noteIterator = new NoteIterator(jingleBells);
+
+var atlasTrafficServer = '0.0.0.0';
+var conn = new WebSocket('ws://' + atlasTrafficServer + ':8765');
+
+conn.onopen = function (ev) {
+  console.log(ev);
+  return;
+};
+
+conn.onmessage = function (ev) {
+    var note = Note();
+    note.play();
+    console.log(ev);
+};

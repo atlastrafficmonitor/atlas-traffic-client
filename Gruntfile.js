@@ -44,10 +44,6 @@ module.exports = function (grunt) {
       gruntfile: {
         files: ['Gruntfile.js']
       },
-      sass: {
-        files: ['<%= config.app %>/styles/{,*/}*.{scss,sass}'],
-        tasks: ['sass:server', 'autoprefixer']
-      },
       styles: {
         files: ['<%= config.app %>/styles/{,*/}*.css'],
         tasks: ['newer:copy:styles', 'autoprefixer']
@@ -120,31 +116,6 @@ module.exports = function (grunt) {
       ]
     },
 
-    // Compiles Sass to CSS and generates necessary files if requested
-    sass: {
-      options: {
-        loadPath: 'bower_components'
-      },
-      dist: {
-        files: [{
-          expand: true,
-          cwd: '<%= config.app %>/styles',
-          src: ['*.{scss,sass}'],
-          dest: '.tmp/styles',
-          ext: '.css'
-        }]
-      },
-      server: {
-        files: [{
-          expand: true,
-          cwd: '<%= config.app %>/styles',
-          src: ['*.{scss,sass}'],
-          dest: '.tmp/styles',
-          ext: '.css'
-        }]
-      }
-    },
-
     // Add vendor prefixed styles
     autoprefixer: {
       options: {
@@ -164,12 +135,7 @@ module.exports = function (grunt) {
     wiredep: {
       app: {
         ignorePath: /^\/|\.\.\//,
-        src: ['<%= config.app %>/index.html'],
-        exclude: ['bower_components/bootstrap-sass-official/assets/javascripts/bootstrap.js']
-      },
-      sass: {
-        src: ['<%= config.app %>/styles/{,*/}*.{scss,sass}'],
-        ignorePath: /(\.\.\/){1,2}bower_components\//
+        src: ['<%= config.app %>/index.html']
       }
     },
 
@@ -285,27 +251,32 @@ module.exports = function (grunt) {
     // Copies remaining files to places other tasks can use
     copy: {
       dist: {
-        files: [{
-          expand: true,
-          dot: true,
-          cwd: '<%= config.app %>',
-          dest: '<%= config.dist %>',
-          src: [
-            '*.{ico,png,txt}',
-            'images/{,*/}*.webp',
-            '{,*/}*.html',
-            'styles/fonts/{,*/}*.*'
-          ]
-        }, {
-          src: 'node_modules/apache-server-configs/dist/.htaccess',
-          dest: '<%= config.dist %>/.htaccess'
-        }, {
-          expand: true,
-          dot: true,
-          cwd: '.',
-          src: 'bower_components/bootstrap-sass-official/assets/fonts/bootstrap/*',
-          dest: '<%= config.dist %>'
-        }]
+        files:
+          [
+            {
+              expand: true,
+              dot: true,
+              cwd: '<%= config.app %>',
+              dest: '<%= config.dist %>',
+              src: [
+                '*.{ico,png,txt}',
+                'images/{,*/}*.webp',
+                '{,*/}*.html',
+                'scripts/{,*/}*.js',
+                'styles/**/*'
+              ]
+          },
+          {
+            src: 'node_modules/apache-server-configs/dist/.htaccess',
+            dest: '<%= config.dist %>/.htaccess'
+          },
+          {
+            expand: true,
+            dot: true,
+            src: 'bower_components/**/*',
+            dest: '<%= config.dist %>'
+          }
+        ]
       },
       styles: {
         expand: true,
@@ -319,11 +290,9 @@ module.exports = function (grunt) {
     // Run some tasks in parallel to speed up build process
     concurrent: {
       server: [
-        'sass:server',
         'copy:styles'
       ],
       dist: [
-        'sass',
         'copy:styles',
         'imagemin',
         'svgmin'
@@ -362,10 +331,7 @@ module.exports = function (grunt) {
     'concurrent:dist',
     'autoprefixer',
     'concat',
-    'cssmin',
-    'uglify',
     'copy:dist',
-    'rev',
     'usemin',
     'htmlmin'
   ]);

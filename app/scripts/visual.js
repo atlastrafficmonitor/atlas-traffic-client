@@ -13,7 +13,7 @@ function Ball(r, p, v) {
   this.sidePoints = [];
   this.path = new Path({
     fillColor: {
-      hue: (.7 + (numPeople/60*.3)) * 360,
+      hue: (0.7 + (numPeople / 60 * 0.3)) * 360,
       saturation: 1,
       brightness: 1
     },
@@ -34,33 +34,47 @@ function Ball(r, p, v) {
 Ball.prototype = {
   iterate: function() {
     this.checkBorders();
-    if (this.vector.length > this.maxVec)
+
+    if (this.vector.length > this.maxVec) {
       this.vector.length = this.maxVec;
+    }
+
     this.point += this.vector;
     this.updateShape();
   },
 
   checkBorders: function() {
     var size = view.size;
-    if (this.point.x < -this.radius)
+    if (this.point.x < -this.radius) {
       this.point.x = size.width + this.radius;
-    if (this.point.x > size.width + this.radius)
+    }
+
+    if (this.point.x > size.width + this.radius) {
       this.point.x = -this.radius;
-    if (this.point.y < -this.radius)
+    }
+
+    if (this.point.y < -this.radius) {
       this.point.y = size.height/2 + this.radius;
-    if (this.point.y > size.height/2 + this.radius)
+    }
+
+    if (this.point.y > size.height/2 + this.radius) {
       this.point.y = -this.radius;
+    }
   },
 
   updateShape: function() {
     var segments = this.path.segments;
-    for (var i = 0; i < this.numSegment; i ++)
-    segments[i].point = this.getSidePoint(i);
+
+    for (var i = 0; i < this.numSegment; i ++) {
+      segments[i].point = this.getSidePoint(i);
+    }
 
     this.path.smooth();
-    for (var i = 0; i < this.numSegment; i ++) {
-      if (this.boundOffset[i] < this.radius / 4)
+    for (i = 0; i < this.numSegment; i ++) {
+      if (this.boundOffset[i] < this.radius / 4) {
         this.boundOffset[i] = this.radius / 4;
+      }
+
       var next = (i + 1) % this.numSegment;
       var prev = (i > 0) ? i - 1 : this.numSegment - 1;
       var offset = this.boundOffset[i];
@@ -72,7 +86,7 @@ Ball.prototype = {
 
   react: function(b) {
     var dist = this.point.getDistance(b.point);
-    if (dist < this.radius + b.radius && dist != 0) {
+    if (dist < this.radius + b.radius && dist !== 0) {
       var overlap = this.radius + b.radius - dist;
       var direc = (this.point - b.point).normalize(overlap * 0.015);
       this.vector += direc;
@@ -107,15 +121,16 @@ Ball.prototype = {
   },
 
   updateBounds: function() {
-    for (var i = 0; i < this.numSegment; i ++)
-    this.boundOffset[i] = this.boundOffsetBuff[i];
+    for (var i = 0; i < this.numSegment; i ++){
+      this.boundOffset[i] = this.boundOffsetBuff[i];
+    }
   }
 };
 
 
 //--------------------- main ---------------------
 
-setTimeout(function(){location.reload()},10000);
+setTimeout(function(){ location.reload(); }, 10000 );
 var balls = [];
 var numBalls = numPeople;
 for (var i = 0; i < numBalls; i++) {
@@ -128,13 +143,16 @@ for (var i = 0; i < numBalls; i++) {
   balls.push(new Ball(radius, position, vector));
 }
 
+ /*jshint unused:false*/
 function onFrame() {
   for (var i = 0; i < balls.length - 1; i++) {
     for (var j = i + 1; j < balls.length; j++) {
       balls[i].react(balls[j]);
     }
   }
-  for (var i = 0, l = balls.length; i < l; i++) {
+
+  var l;
+  for (i = 0, l = balls.length; i < l; i++) {
     balls[i].iterate();
   }
 }
