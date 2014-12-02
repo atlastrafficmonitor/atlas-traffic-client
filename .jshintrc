@@ -17,5 +17,14 @@
   "strict": true,
   "trailing": true,
   "smarttabs": true,
-  "jquery": true
+  "jquery": true,
+
+  "globals": {
+    "_": false,
+    "T": false,
+    "Point": false,
+    "PointText": false,
+    "Path": false,
+    "view": false
+  }
 }
