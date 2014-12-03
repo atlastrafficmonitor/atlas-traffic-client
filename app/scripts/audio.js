@@ -28,6 +28,8 @@ var jingleBells = {
   ], function(n) { return notesMap[n]; })
 };
 
+var noteIterator = new NoteIterator(jingleBells);
+
 var scale = ['G','A','B','D','E'];
 
 var pentaNotes = [];
@@ -45,34 +47,33 @@ function Note(volume) {
 
     this.applyDelay = function(_time,_fb,_mix) {
         // Applies Delay to this.tone
-        this.tone = new T("delay", {time:_time, fb:_fb, mix:_mix}, this.tone)
+        this.tone = new T('delay', {time:_time, fb:_fb, mix:_mix}, this.tone);
     };
 
     this.applyReverb = function(_room,_damp,_mix){
         // Applies Reverb with given parameters to this.tone
-        this.tone = new T("reverb", {room:_room, damp:_damp, mix:_mix},this.tone);
-    }
+        this.tone = new T('reverb', {room:_room, damp:_damp, mix:_mix},this.tone);
+    };
 
     this.applyADSR = function(_a,_d,_s,_r,_timeout){
         // Applies Attack, Decay, Sustain, Release Envelope to this.tone
-        var toKill = T("adsr", {a:_a,d:_d,s:_s,r:_r}, this.tone).on("ended", function() {
+        var toKill = new T('adsr', {a:_a,d:_d,s:_s,r:_r}, this.tone).on('ended', function() {
             this.pause();
         }).bang();
-        var timeout = T("timeout", {timeout:_timeout}, function() {
+        var timeout = new T('timeout', {timeout:_timeout}, function() {
             toKill.release();
             timeout.stop();
         }).start();
         this.tone = toKill;
-    }
+    };
 
-    this.applyDelay(1250,.4,.2);
-    this.applyReverb(.9,.9,.25);
+    this.applyDelay(1250,0.4,0.2);
+    this.applyReverb(0.9,0.9,0.25);
     return this.tone;
-};
+}
 
-var noteIterator = new NoteIterator(jingleBells);
 
-var atlasTrafficServer = '0.0.0.0';
+var atlasTrafficServer = '192.168.50.4';
 var conn = new WebSocket('ws://' + atlasTrafficServer + ':8765');
 
 conn.onopen = function (ev) {
