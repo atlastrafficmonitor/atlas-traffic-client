@@ -58,7 +58,7 @@ var Note = function () {
 
 var noteIterator = new NoteIterator(jingleBells);
 
-var atlasTrafficServer = '0.0.0.0';
+var atlasTrafficServer = '192.168.50.4';
 var conn = new WebSocket('ws://' + atlasTrafficServer + ':8765');
 
 conn.onopen = function (ev) {
