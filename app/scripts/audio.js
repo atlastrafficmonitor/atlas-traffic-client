@@ -40,25 +40,39 @@ var pentatonic = {
   notes: _.map(pentaNotes, function(n) { return notesMap[n]; })
 };
 
-var Note = function () {
-    var pluck = new T('pluck', {freq:pentatonic.notes[noteIterator()], mul:0.5}).bang();
-    /* If we want an adsr filter
-    var env = T("adsr", {a:200,d:500,s:4.0,r:500}, pluck).on("ended", function() {
-    this.pause();
-    }).bang();
-    var timeout = T("timeout", {timeout:1500}, function() {
-        env.release();
-        timeout.stop();
-    }).start();
-    */
-    var delay = new T("delay", {time:1250,fb:0.4, mix:.2}, pluck);
-    var verb = new T('reverb',{room:0.9, damp:0.9, mix:0.25},delay);
-    return verb;
+function Note(volume) {
+    this.tone = new T('pluck', {freq:pentatonic.notes[noteIterator()], mul:volume}).bang();
+
+    this.applyDelay = function(_time,_fb,_mix) {
+        // Applies Delay to this.tone
+        this.tone = new T("delay", {time:_time, fb:_fb, mix:_mix}, this.tone)
+    };
+
+    this.applyReverb = function(_room,_damp,_mix){
+        // Applies Reverb with given parameters to this.tone
+        this.tone = new T("reverb", {room:_room, damp:_damp, mix:_mix},this.tone);
+    }
+
+    this.applyADSR = function(_a,_d,_s,_r,_timeout){
+        // Applies Attack, Decay, Sustain, Release Envelope to this.tone
+        var toKill = T("adsr", {a:_a,d:_d,s:_s,r:_r}, this.tone).on("ended", function() {
+            this.pause();
+        }).bang();
+        var timeout = T("timeout", {timeout:_timeout}, function() {
+            toKill.release();
+            timeout.stop();
+        }).start();
+        this.tone = toKill;
+    }
+
+    this.applyDelay(1250,.4,.2);
+    this.applyReverb(.9,.9,.25);
+    return this.tone;
 };
 
 var noteIterator = new NoteIterator(jingleBells);
 
-var atlasTrafficServer = '192.168.50.4';
+var atlasTrafficServer = '0.0.0.0';
 var conn = new WebSocket('ws://' + atlasTrafficServer + ':8765');
 
 conn.onopen = function (ev) {
@@ -67,7 +81,7 @@ conn.onopen = function (ev) {
 };
 
 conn.onmessage = function (ev) {
-    var note = new Note();
+    var note = new Note(Math.random());
     note.play();
     console.log(ev);
 };
