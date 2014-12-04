@@ -8,6 +8,12 @@ var NoteIterator = function (song) {
   };
 };
 
+var RandIterator = function(song) {
+  return function() {
+    return Math.floor(Math.random() * scale.length);
+  }
+}
+
 var notesMap = {
   'E' : 329.6,
   'F' : 349.2,
@@ -28,22 +34,17 @@ var jingleBells = {
   ], function(n) { return notesMap[n]; })
 };
 
-var noteIterator = new NoteIterator(jingleBells);
-
 var scale = ['G','A','B','D','E'];
-
-var pentaNotes = [];
-for (var i = 0 ; i < 100 ; i++){
-    pentaNotes.push(scale[Math.floor(Math.random() * scale.length)]);
-}
+var noteIterator = new NoteIterator(jingleBells);
+var randIterator = new RandIterator(scale);
 
 var pentatonic = {
   name: 'Pentatonic Song',
-  notes: _.map(pentaNotes, function(n) { return notesMap[n]; })
+  notes: _.map(scale, function(n) { return notesMap[n]; })
 };
 
 function Note(volume) {
-    this.tone = new T('pluck', {freq:pentatonic.notes[noteIterator()], mul:volume}).bang();
+    this.tone = new T('pluck', {freq:pentatonic.notes[randIterator()], mul:volume}).bang();
 
     this.applyDelay = function(_time,_fb,_mix) {
         // Applies Delay to this.tone
@@ -55,25 +56,36 @@ function Note(volume) {
         this.tone = new T('reverb', {room:_room, damp:_damp, mix:_mix},this.tone);
     };
 
-    this.applyADSR = function(_a,_d,_s,_r,_timeout){
+    this.applyADSR = function(_a,_d,_s,_r){
         // Applies Attack, Decay, Sustain, Release Envelope to this.tone
-        var toKill = new T('adsr', {a:_a,d:_d,s:_s,r:_r}, this.tone).on('ended', function() {
+        this.tone = new T('adsr', {a:_a,d:_d,s:_s,r:_r}, this.tone).on('ended', function() {
             this.pause();
         }).bang();
-        var timeout = new T('timeout', {timeout:_timeout}, function() {
-            toKill.release();
-            timeout.stop();
-        }).start();
-        this.tone = toKill;
     };
 
-    this.applyDelay(1250,0.4,0.2);
+    this.applyTimeout = function(_timeout){
+        var self = this;
+        var timeout = new T('timeout', {timeout:_timeout}).on("ended", function() {
+            self.tone.release();
+            timeout.stop();
+        }).start();
+    };
+
+    this.applyRelease = function(timeout) {
+        var table = [volume,[0,timeout]];
+        this.tone = T("env", {table:table}, this.tone).on("ended", function() {
+            this.pause();
+        }).bang().play();
+    }
+    var table = [0.8, [0, 1500]];
+    this.applyDelay(1250,0.4,0.1);
     this.applyReverb(0.9,0.9,0.25);
+    this.applyRelease(5000);
     return this.tone;
 }
 
 
-var atlasTrafficServer = '192.168.50.4';
+var atlasTrafficServer = '0.0.0.0';
 var conn = new WebSocket('ws://' + atlasTrafficServer + ':8765');
 
 conn.onopen = function (ev) {
