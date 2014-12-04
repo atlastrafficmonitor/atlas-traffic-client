@@ -1,5 +1,5 @@
 'use strict';
-
+/*
 var NoteIterator = function (song) {
   var count = 0;
 
@@ -7,12 +7,13 @@ var NoteIterator = function (song) {
     return ++count % song.notes.length;
   };
 };
+*/
 
-var RandIterator = function(song) {
+var RandIterator = function(notes) {
   return function() {
-    return Math.floor(Math.random() * scale.length);
-  }
-}
+    return Math.floor(Math.random() * notes.length);
+  };
+};
 
 var notesMap = {
   'E' : 329.6,
@@ -24,6 +25,9 @@ var notesMap = {
   'D' : 293.7,
 };
 
+var scale = ['G','A','B','D','E'];
+
+/*
 var jingleBells = {
   name: 'Jingle Bells',
   notes: _.map([
@@ -33,15 +37,15 @@ var jingleBells = {
     'F','F','F','F','F','E','E','E','E','G','G','F','D','C'
   ], function(n) { return notesMap[n]; })
 };
-
-var scale = ['G','A','B','D','E'];
-var noteIterator = new NoteIterator(jingleBells);
-var randIterator = new RandIterator(scale);
+*/
 
 var pentatonic = {
   name: 'Pentatonic Song',
   notes: _.map(scale, function(n) { return notesMap[n]; })
 };
+
+//var noteIterator = new NoteIterator(jingleBells);
+var randIterator = new RandIterator(scale);
 
 function Note(volume) {
     this.tone = new T('pluck', {freq:pentatonic.notes[randIterator()], mul:volume}).bang();
@@ -65,7 +69,7 @@ function Note(volume) {
 
     this.applyTimeout = function(_timeout){
         var self = this;
-        var timeout = new T('timeout', {timeout:_timeout}).on("ended", function() {
+        var timeout = new T('timeout', {timeout:_timeout}).on('ended', function() {
             self.tone.release();
             timeout.stop();
         }).start();
@@ -73,11 +77,11 @@ function Note(volume) {
 
     this.applyRelease = function(timeout) {
         var table = [volume,[0,timeout]];
-        this.tone = T("env", {table:table}, this.tone).on("ended", function() {
+        this.tone = new T('env', {table:table}, this.tone).on('ended', function() {
             this.pause();
         }).bang().play();
-    }
-    var table = [0.8, [0, 1500]];
+    };
+
     this.applyDelay(1250,0.4,0.1);
     this.applyReverb(0.9,0.9,0.25);
     this.applyRelease(5000);
