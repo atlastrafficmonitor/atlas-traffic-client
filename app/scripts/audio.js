@@ -24,9 +24,6 @@ var notesMap = {
   'D' : 293.7,
 };
 
-var scale = ['G','A','B','D','E'];
-
-
 var jingleBells = {
   name: 'Jingle Bells',
   notes: _.map([
@@ -122,7 +119,7 @@ function Song() {
         // Runs song rotation logic - change song everytime previous song finishes alloted number of times.
         if (self.notesPlayed > self.getTotalNotes()){
             self.change();
-        };
+        }
         return;
     };
 
