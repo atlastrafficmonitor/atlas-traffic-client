@@ -86,9 +86,10 @@ function Note(song, volume) {
     return this.tone;
 }
 
-function Song() {
+function SongAPI(firstSong) {
     // Class to contain all song operations - change songs, get notes from a song, etc.
-    this.song = jingleBells; // Initial song to play
+    //  Takes song as input, if none is supplied just play jingle bells
+    this.song = firstSong || jingleBells; // Initial song to play
     this.allSongs = [jingleBells,pentatonic];
     this.notesPlayed = 0;
     this.songsPlayed = 0;
@@ -103,11 +104,10 @@ function Song() {
         return note;
     };
 
-    this.change = function() {
+    this.getNextSong = function() {
         // Iterates through allSongs to the next song.
-        self.song = this.allSongs[++self.songsPlayed % self.allSongs.length];
-        console.log('Changing song to: ' + self.song.name + ', zeroing out notes');
-        this.notesPlayed = 0;
+        var next = this.allSongs[++self.songsPlayed % self.allSongs.length];
+        return next;
     };
 
     this.getTotalNotes = function() {
@@ -118,9 +118,17 @@ function Song() {
     this.rotate = function() {
         // Runs song rotation logic - change song everytime previous song finishes alloted number of times.
         if (self.notesPlayed > self.getTotalNotes()){
-            self.change();
+            self.changeSong(self.getNextSong());
         }
         return;
+    };
+
+    this.changeSong = function(song) {
+        // Change song to specific song - pass song element, not name.
+        console.log('Changing song to: ' + song.name + ', zeroing out notes');
+        self.song = song;
+        self.notesPlayed = 0;
+        return self.song;
     };
 
     return this.song.name;
@@ -129,16 +137,16 @@ function Song() {
 var atlasTrafficServer = '0.0.0.0';
 var conn = new WebSocket('ws://' + atlasTrafficServer + ':8765');
 
-var song;
+var songAPI;
 
 conn.onopen = function (ev) {
-    song = new Song();
+    songAPI = new SongAPI();
     console.log(ev);
     return;
 };
 
 conn.onmessage = function (ev) {
-    var note = song.getNote();
+    var note = songAPI.getNote();
     note.play();
     console.log(ev);
 };
