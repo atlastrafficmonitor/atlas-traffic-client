@@ -1,17 +1,17 @@
 'use strict';
-/*
-var NoteIterator = function (song) {
+
+var NoteIterator = function () {
   var count = 0;
 
   return function () {
-    return ++count % song.notes.length;
+    return ++count % this.notes.length;
   };
 };
-*/
 
-var RandIterator = function(notes) {
+
+var RandIterator = function() {
   return function() {
-    return Math.floor(Math.random() * notes.length);
+    return Math.floor(Math.random() * this.notes.length);
   };
 };
 
@@ -27,7 +27,7 @@ var notesMap = {
 
 var scale = ['G','A','B','D','E'];
 
-/*
+
 var jingleBells = {
   name: 'Jingle Bells',
   notes: _.map([
@@ -35,20 +35,30 @@ var jingleBells = {
     'F','F','F','F','F','E','E','E','E','E','D','D','E','D',
     'E','E','E','E','E','E','E','G','C','D','E',
     'F','F','F','F','F','E','E','E','E','G','G','F','D','C'
-  ], function(n) { return notesMap[n]; })
+  ], function(n) { return notesMap[n]; }),
+  iterator: new NoteIterator()
 };
-*/
+
 
 var pentatonic = {
   name: 'Pentatonic Song',
-  notes: _.map(scale, function(n) { return notesMap[n]; })
+  notes: _.map(scale, function(n) { return notesMap[n]; }),
+  iterator: new RandIterator()
 };
 
-//var noteIterator = new NoteIterator(jingleBells);
-var randIterator = new RandIterator(scale);
+function Song() {
+    this.name = 'pentatonic';
 
-function Note(volume) {
-    this.tone = new T('pluck', {freq:pentatonic.notes[randIterator()], mul:volume}).bang();
+    this.getNote = function() {
+        var note = new Note(eval(this.name), Math.random());
+        return note;
+    };
+
+    return this.name;
+}
+
+function Note(song, volume) {
+    this.tone = new T('pluck', {freq:song.notes[song.iterator()], mul:volume}).bang();
 
     this.applyDelay = function(_time,_fb,_mix) {
         // Applies Delay to this.tone
@@ -92,13 +102,16 @@ function Note(volume) {
 var atlasTrafficServer = '0.0.0.0';
 var conn = new WebSocket('ws://' + atlasTrafficServer + ':8765');
 
+var song;
+
 conn.onopen = function (ev) {
-  console.log(ev);
-  return;
+    song = new Song();
+    console.log(ev);
+    return;
 };
 
 conn.onmessage = function (ev) {
-    var note = new Note(Math.random());
+    var note = song.getNote();
     note.play();
     console.log(ev);
 };
