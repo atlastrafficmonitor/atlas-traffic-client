@@ -8,7 +8,6 @@ var NoteIterator = function () {
   };
 };
 
-
 var RandIterator = function() {
   return function() {
     return Math.floor(Math.random() * this.notes.length);
@@ -36,26 +35,18 @@ var jingleBells = {
     'E','E','E','E','E','E','E','G','C','D','E',
     'F','F','F','F','F','E','E','E','E','G','G','F','D','C'
   ], function(n) { return notesMap[n]; }),
-  iterator: new NoteIterator()
+  iterator: new NoteIterator(),
+  timesPlayed: 1
 };
 
 
 var pentatonic = {
   name: 'Pentatonic Song',
-  notes: _.map(scale, function(n) { return notesMap[n]; }),
-  iterator: new RandIterator()
+  notes: _.map(['G','A','B','D','E'], function(n) { return notesMap[n]; }),
+  iterator: new RandIterator(),
+  timesPlayed: 10
 };
 
-function Song() {
-    this.name = 'pentatonic';
-
-    this.getNote = function() {
-        var note = new Note(eval(this.name), Math.random());
-        return note;
-    };
-
-    return this.name;
-}
 
 function Note(song, volume) {
     this.tone = new T('pluck', {freq:song.notes[song.iterator()], mul:volume}).bang();
@@ -98,6 +89,45 @@ function Note(song, volume) {
     return this.tone;
 }
 
+function Song() {
+    // Class to contain all song operations - change songs, get notes from a song, etc.
+    this.song = jingleBells; // Initial song to play
+    this.allSongs = [jingleBells,pentatonic];
+    this.notesPlayed = 0;
+    this.songsPlayed = 0;
+    var self = this;
+
+    this.getNote = function() {
+        // Pulls note from current song, calls rotate logic
+        var volume = Math.random();
+        var note = new Note(this.song, volume);
+        this.notesPlayed++;
+        this.rotate();
+        return note;
+    };
+
+    this.change = function() {
+        // Iterates through allSongs to the next song.
+        self.song = this.allSongs[++self.songsPlayed % self.allSongs.length];
+        console.log('Changing song to: ' + self.song.name + ', zeroing out notes');
+        this.notesPlayed = 0;
+    };
+
+    this.getTotalNotes = function() {
+        // Returns total notes in a song (notes * timesPlayed)
+        return self.song.notes.length * self.song.timesPlayed;
+    };
+
+    this.rotate = function() {
+        // Runs song rotation logic - change song everytime previous song finishes alloted number of times.
+        if (self.notesPlayed > self.getTotalNotes()){
+            self.change();
+        };
+        return;
+    };
+
+    return this.song.name;
+}
 
 var atlasTrafficServer = '0.0.0.0';
 var conn = new WebSocket('ws://' + atlasTrafficServer + ':8765');
