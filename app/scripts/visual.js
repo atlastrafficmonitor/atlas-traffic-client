@@ -32,10 +32,10 @@ setInterval(function(){
 var currentdate = new Date();
 k = currentdate.getHours();
 counts[hour].iterations = counts[hour].iterations + 1;
-counts[hour].averagenum = parseInt((parseInt(counts[hour].averagenum) + parseInt(numPeople))/counts[hour].iterations);
+counts[hour].averagenum = parseInt((parseFloat(counts[hour].averagenum)*parseFloat(counts[hour].iterations-1) + parseFloat(numPeople))/counts[hour].iterations);
 counts[hour].count = numPeople;
 
-}, 3000);
+}, 1000);
 
 
 
@@ -211,7 +211,9 @@ conn.onmessage = function (ev) {
   console.log(numPeople);
   numBalls = evdata.totalEntries;
   if (numPeople > mostpeople){
+  if (numPeople > 10){
   mostpeople = numPeople;
+  }
   }
 
 
@@ -220,7 +222,14 @@ conn.onmessage = function (ev) {
   console.log(currentHour);
   drawText(currentHour);
   newEvent();
+
+  if (numPeople >= 10){
   textin.content = 'Number of People in Room: ' + numPeople;
+  }
+  if (numPeople < 10){
+  textin.content = 'Number of People in Room: < 10';
+  }
+
 
 };
 
@@ -246,7 +255,12 @@ var textin = new PointText(new Point(size.width/2, size.height/3));
 textin.justification = 'center';
 textin.fillColor = 'white';
 textin.fontSize = 40;
-textin.content = 'Number of People in Room: ' + numPeople;
+if (numPeople >= 10){
+  textin.content = 'Number of People in Room: ' + numPeople;
+  }
+  if (numPeople < 10){
+  textin.content = 'Number of People in Room: < 10';
+  }
 
 var beglong = new Point(0, 3*size.height/4);
 var endlong = new Point(size.width, 3*size.height/4);
