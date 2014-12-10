@@ -28,8 +28,8 @@ var jingleBells = {
 
 var noteIterator = new NoteIterator(jingleBells);
 
-var atlasTrafficServer = '192.168.50.4';
-var conn = new WebSocket('ws://' + atlasTrafficServer + ':8765');
+var atlasTrafficServer = '0.0.0.0';
+var conn = new WebSocket('ws://' + atlasTrafficServer + ':3000');
 
 conn.onopen = function (ev) {
   console.log(ev);

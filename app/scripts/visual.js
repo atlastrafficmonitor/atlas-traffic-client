@@ -1,6 +1,44 @@
+
 'use strict';
 
-var numPeople = parseInt(Math.random() * 60);
+
+var numBefore = 0;
+
+var atlasTrafficServer = '0.0.0.0';
+var conn = new WebSocket('ws://' + atlasTrafficServer + ':3000');
+var numPeople = 0;
+var currentHour =0; 
+var k = 0;
+var counts = [];
+var mostpeople = 0;
+var hour = 0;
+
+function TimeCount(i, h, c, a) {
+
+this.iterations = i;
+this.hour = h;
+this.count = c;
+this.averagenum = a;
+
+}
+
+for (var i = 0; i<24; i++) {
+counts[i] = new TimeCount(0, i, 5, 0);
+}
+
+
+setInterval(function(){ 
+
+var currentdate = new Date();
+k = currentdate.getHours();
+counts[hour].iterations = counts[hour].iterations + 1;
+counts[hour].averagenum = parseInt((parseInt(counts[hour].averagenum) + parseInt(numPeople))/counts[hour].iterations);
+counts[hour].count = numPeople;
+
+}, 3000);
+
+
+
 
 function Ball(r, p, v) {
   this.radius = r;
@@ -13,7 +51,8 @@ function Ball(r, p, v) {
   this.sidePoints = [];
   this.path = new Path({
     fillColor: {
-      hue: (0.7 + (numPeople / 60 * 0.3)) * 360,
+      /*hue: (0.7 + (numPeople / 60 * 0.3)) * 360,*/
+      hue: Math.random() * 360,
       saturation: 1,
       brightness: 1
     },
@@ -130,18 +169,61 @@ Ball.prototype = {
 
 //--------------------- main ---------------------
 
-setTimeout(function(){ location.reload(); }, 10000 );
 var balls = [];
 var numBalls = numPeople;
-for (var i = 0; i < numBalls; i++) {
+
+
+
+function newEvent(){
+
+  for (var i = 0; i < numPeople; i++) {
   var position = Point.random() * view.size;
   var vector = new Point({
     angle: 360 * Math.random(),
-    length: numPeople/60 * 10
+    length: 0.1
   });
-  var radius = 1-(numPeople/60) * 60 + 60;
+  var radius = 1-(numPeople/120) * 60 + 60;
   balls.push(new Ball(radius, position, vector));
+
 }
+
+}
+
+var size = view.size;
+var textin = new PointText(new Point(size.width/2, size.height/3));
+textin.justification = 'center';
+textin.fillColor = 'white';
+textin.fontSize = 40;
+textin.content = 'Number of People in Room: ' + numPeople;
+
+conn.onmessage = function (ev) {
+  
+  project.activeLayer.removeChildren();
+
+  for (var o = 0; o < balls.length; o++){
+  balls = [];
+  }  
+
+
+  numBefore = numPeople;
+  var evdata = JSON.parse(ev.data);
+  numPeople = evdata.totalEntries;
+  console.log(numPeople);
+  numBalls = evdata.totalEntries;
+  if (numPeople > mostpeople){
+  mostpeople = numPeople;
+  }
+
+
+  currentHour = evdata.timestamp;
+  hour = parseInt(currentHour.substring(0, 2));
+  console.log(currentHour);
+  drawText(currentHour);
+  newEvent();
+  textin.content = 'Number of People in Room: ' + numPeople;
+
+};
+
 
  /*jshint unused:false*/
 function onFrame() {
@@ -157,7 +239,15 @@ function onFrame() {
   }
 }
 
-var size = view.size;
+
+function drawText(ch) {
+
+var textin = new PointText(new Point(size.width/2, size.height/3));
+textin.justification = 'center';
+textin.fillColor = 'white';
+textin.fontSize = 40;
+textin.content = 'Number of People in Room: ' + numPeople;
+
 var beglong = new Point(0, 3*size.height/4);
 var endlong = new Point(size.width, 3*size.height/4);
 var path = new Path.Line(beglong, endlong);
@@ -183,69 +273,120 @@ var endone = new Point(4*size.width/5 , size.height);
 var path = new Path.Line(begone, endone);
 path.strokeColor = 'white';
 
-var text = new PointText(new Point(size.width/2, size.height/3));
-text.justification = 'center';
-text.fillColor = 'white';
-text.fontSize = 40;
-text.content = 'Number of People in Room: ' + numPeople;
 
 var text = new PointText(new Point(size.width/10, 16*size.height/20));
 text.justification = 'center';
 text.fillColor = 'white';
 text.fontSize = 20;
-text.content = '2:00';
+if (parseInt(ch.substring(0, 2))-2 >= 0){
+text.content = parseInt(ch.substring(0, 2)) - 2 + ':00';
+}
+if (parseInt(ch.substring(0, 2))-2 === -1){
+text.content = '23:00';
+}
+if (parseInt(ch.substring(0, 2))-2 === -2){
+text.content = '22:00';
+}
 
 var text = new PointText(new Point(3*size.width/10, 16*size.height/20));
 text.justification = 'center';
 text.fillColor = 'white';
 text.fontSize = 20;
-text.content = '3:00';
+if (parseInt(ch.substring(0, 2))-1 >= 0){
+text.content = parseInt(ch.substring(0, 2)) - 1 + ':00';
+}
+if (parseInt(ch.substring(0, 2))-1 === -1){
+text.content = '23:00';
+}
 
 var text = new PointText(new Point(7*size.width/10, 16*size.height/20));
 text.justification = 'center';
 text.fillColor = 'white';
 text.fontSize = 20;
-text.content = '5:00';
+text.content = parseInt(ch.substring(0, 2)) + 1 + ':00';
+text.fontSize = 20;
+if (parseInt(ch.substring(0, 2))+1 <= 23){
+text.content = parseInt(ch.substring(0, 2)) + 1 + ':00';
+}
+if (parseInt(ch.substring(0, 2))+1 === 24){
+text.content = '0:00';
+}
 
 var text = new PointText(new Point(9*size.width/10, 16*size.height/20));
 text.justification = 'center';
 text.fillColor = 'white';
 text.fontSize = 20;
-text.content = '6:00';
+if (parseInt(ch.substring(0, 2))+2 <= 23){
+text.content = parseInt(ch.substring(0, 2)) + 2 + ':00';
+}
+if (parseInt(ch.substring(0, 2))+2 === 24){
+text.content = '0:00';
+}
+if (parseInt(ch.substring(0, 2))+2 === 25){
+text.content = '1:00';
+}
 
-var text = new PointText(new Point(size.width/10, 18*size.height/20));
-text.justification = 'center';
-text.fillColor = 'white';
-text.fontSize = 30;
-text.content = parseInt(Math.random()*60);
+var countTwoAgo = new PointText(new Point(size.width/10, 18*size.height/20));
+countTwoAgo.justification = 'center';
+countTwoAgo.fillColor = 'white';
+countTwoAgo.fontSize = 30;
+if (parseInt(ch.substring(0, 2))-2 >= 0){
+countTwoAgo.content = counts[parseInt(ch.substring(0, 2))-2].count;
+}
+if (parseInt(ch.substring(0, 2))-2 === -1){
+countTwoAgo.content = counts[23].count;
+}
+if (parseInt(ch.substring(0, 2))-2 === -2){
+countTwoAgo.content = counts[22].count;
+}
 
-var text = new PointText(new Point(3*size.width/10, 18*size.height/20));
-text.justification = 'center';
-text.fillColor = 'white';
-text.fontSize = 30;
-text.content = parseInt(Math.random()*60);
-
-var text = new PointText(new Point(7*size.width/10, 18*size.height/20));
-text.justification = 'center';
-text.fillColor = 'white';
-text.fontSize = 30;
-text.content = parseInt(Math.random()*60);
-
-var text = new PointText(new Point(9*size.width/10, 18*size.height/20));
-text.justification = 'center';
-text.fillColor = 'white';
-text.fontSize = 30;
-text.content = parseInt(Math.random()*60);
+var countOneAgo = new PointText(new Point(3*size.width/10, 18*size.height/20));
+countOneAgo .justification = 'center';
+countOneAgo .fillColor = 'white';
+countOneAgo .fontSize = 30;
+if (parseInt(ch.substring(0, 2))-1 >= 0){
+countOneAgo.content = counts[parseInt(ch.substring(0, 2))-1].count;
+}
+if (parseInt(ch.substring(0, 2))-1 === -1){
+countOneAgo.content = counts[23].count;
+}
 
 
-var text = new PointText(new Point(5*size.width/10, 16*size.height/20));
-text.justification = 'center';
-text.fillColor = 'white';
-text.fontSize = 15;
-text.content = 'Less Crowded At:';
+var predOne = new PointText(new Point(7*size.width/10, 18*size.height/20));
+predOne.justification = 'center';
+predOne.fillColor = 'white';
+predOne.fontSize = 30;
+if (parseInt(ch.substring(0, 2))+1 < 24){
+predOne.content = counts[parseInt(ch.substring(0, 2))+1].averagenum;
+}
+if (parseInt(ch.substring(0, 2))+1 === 24){
+predOne.content = counts[0].averagenum;
+}
 
-var text = new PointText(new Point(5*size.width/10, 18*size.height/20));
-text.justification = 'center';
-text.fillColor = 'green';
-text.fontSize = 30;
-text.content = parseInt(Math.random()*12) + ':00';
+var predTwo = new PointText(new Point(9*size.width/10, 18*size.height/20));
+predTwo.justification = 'center';
+predTwo.fillColor = 'white';
+predTwo.fontSize = 30;
+if (parseInt(ch.substring(0, 2))+2 < 24){
+predTwo.content = counts[parseInt(ch.substring(0, 2))+2].averagenum;
+}
+if (parseInt(ch.substring(0, 2))+2 === 24){
+predTwo.content = counts[0].averagenum
+}
+if (parseInt(ch.substring(0, 2))+2 === 25){
+predTwo.content = counts[1].averagenum
+}
+
+
+var labelMid = new PointText(new Point(5*size.width/10, 16*size.height/20));
+labelMid .justification = 'center';
+labelMid .fillColor = 'white';
+labelMid .fontSize = 15;
+labelMid .content = 'Most People';
+
+var cellMid = new PointText(new Point(5*size.width/10, 18*size.height/20));
+cellMid.justification = 'center';
+cellMid.fillColor = 'green';
+cellMid.fontSize = 30;
+cellMid.content = mostpeople;
+}
