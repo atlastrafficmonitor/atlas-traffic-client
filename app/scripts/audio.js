@@ -50,10 +50,6 @@ var randIterator = new RandIterator(scale);
 function Note(volume) {
     this.tone = new T('pluck', {freq:pentatonic.notes[randIterator()], mul:volume}).bang();
 
-<<<<<<< HEAD
-var atlasTrafficServer = '0.0.0.0';
-var conn = new WebSocket('ws://' + atlasTrafficServer + ':3000');
-=======
     this.applyDelay = function(_time,_fb,_mix) {
         // Applies Delay to this.tone
         this.tone = new T('delay', {time:_time, fb:_fb, mix:_mix}, this.tone);
@@ -95,7 +91,6 @@ var conn = new WebSocket('ws://' + atlasTrafficServer + ':3000');
 
 var atlasTrafficServer = '0.0.0.0';
 var conn = new WebSocket('ws://' + atlasTrafficServer + ':8765');
->>>>>>> e32b9e5561436f111c1c1fe95213b8822c801cad
 
 conn.onopen = function (ev) {
   console.log(ev);
