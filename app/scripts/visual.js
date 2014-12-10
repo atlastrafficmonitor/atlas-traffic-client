@@ -10,7 +10,7 @@ var numPeople = 0;
 var currentHour =0; 
 var k = 0;
 var counts = [];
-var mostpeople = 0;
+var mostpeople = 10;
 var hour = 0;
 
 function TimeCount(i, h, c, a) {
@@ -34,8 +34,12 @@ k = currentdate.getHours();
 counts[hour].iterations = counts[hour].iterations + 1;
 counts[hour].averagenum = parseInt((parseFloat(counts[hour].averagenum)*parseFloat(counts[hour].iterations-1) + parseFloat(numPeople))/counts[hour].iterations);
 counts[hour].count = numPeople;
+console.log("hour " + hour)
+if (hour == 2) {
+numPeople = 0;
+}
 
-}, 1000);
+}, 500);
 
 
 
@@ -207,16 +211,16 @@ conn.onmessage = function (ev) {
 
   numBefore = numPeople;
   var evdata = JSON.parse(ev.data);
-  numPeople = evdata.totalEntries;
+  numPeople = parseInt(numPeople) + parseInt(evdata.totalEntries);
   console.log(numPeople);
-  numBalls = evdata.totalEntries;
+  if (numPeople < 0){
+    numPeople = 0;
+  }
   if (numPeople > mostpeople){
   if (numPeople > 10){
   mostpeople = numPeople;
   }
   }
-
-
   currentHour = evdata.timestamp;
   hour = parseInt(currentHour.substring(0, 2));
   console.log(currentHour);
