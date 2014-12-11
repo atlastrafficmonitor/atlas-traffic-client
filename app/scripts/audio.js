@@ -89,8 +89,8 @@ function Note(volume) {
 }
 
 
-var atlasTrafficServer = '0.0.0.0';
-var conn = new WebSocket('ws://' + atlasTrafficServer + ':8765');
+var atlasTrafficServer = '10.202.108.195';
+var conn = new ReconnectingWebSocket('ws://' + atlasTrafficServer + ':8765');
 
 conn.onopen = function (ev) {
   console.log(ev);
