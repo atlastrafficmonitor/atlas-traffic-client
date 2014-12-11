@@ -471,7 +471,7 @@ storyLine = storyLine + 1;
 
 function changePhase() {
 
-if (counts[hour].count > counts[hour].averagenum){
+if (counts[hour].count >= counts[hour].averagenum){
 switch(phase) {
     case "Starts":
         phase = "A";
