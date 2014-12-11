@@ -7,7 +7,7 @@
 
 var numBefore = 0;
 
-var atlasTrafficServer = '0.0.0.0';
+var atlasTrafficServer = '10.202.108.195';
 var conn = new WebSocket('ws://' + atlasTrafficServer + ':3000');
 var numPeople = 0;
 var currentHour =0; 
@@ -100,7 +100,7 @@ counts[hour].averagenum = parseInt((parseInt(counts[hour].averagenum) + parseInt
 counts[hour].count = numPeople;
 numPeople = 0;
 
-}, 10000);
+}, 600000);
 
 
 
@@ -461,7 +461,7 @@ screenText = eval(phase)[storyLine];
 displayImage = eval(phase + "Image")[storyLine];
 storyLine = storyLine + 1;
 
-}, 10000);
+}, 30000);
 
 
 function changePhase() {
@@ -543,6 +543,7 @@ conn.onmessage = function (ev) {
   console.log(currentHour);
 
   newEvent();
+
 
 
 var raster = new Raster(displayImage+'B.jpg');
