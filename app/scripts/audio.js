@@ -1,17 +1,16 @@
 'use strict';
-/*
-var NoteIterator = function (song) {
+
+var NoteIterator = function () {
   var count = 0;
 
   return function () {
-    return ++count % song.notes.length;
+    return ++count % this.notes.length;
   };
 };
-*/
 
-var RandIterator = function(notes) {
+var RandIterator = function() {
   return function() {
-    return Math.floor(Math.random() * notes.length);
+    return Math.floor(Math.random() * this.notes.length);
   };
 };
 
@@ -25,9 +24,6 @@ var notesMap = {
   'D' : 293.7,
 };
 
-var scale = ['G','A','B','D','E'];
-
-/*
 var jingleBells = {
   name: 'Jingle Bells',
   notes: _.map([
@@ -35,20 +31,22 @@ var jingleBells = {
     'F','F','F','F','F','E','E','E','E','E','D','D','E','D',
     'E','E','E','E','E','E','E','G','C','D','E',
     'F','F','F','F','F','E','E','E','E','G','G','F','D','C'
-  ], function(n) { return notesMap[n]; })
+  ], function(n) { return notesMap[n]; }),
+  iterator: new NoteIterator(),
+  timesPlayed: 1
 };
-*/
+
 
 var pentatonic = {
   name: 'Pentatonic Song',
-  notes: _.map(scale, function(n) { return notesMap[n]; })
+  notes: _.map(['G','A','B','D','E'], function(n) { return notesMap[n]; }),
+  iterator: new RandIterator(),
+  timesPlayed: 10
 };
 
-//var noteIterator = new NoteIterator(jingleBells);
-var randIterator = new RandIterator(scale);
 
-function Note(volume) {
-    this.tone = new T('pluck', {freq:pentatonic.notes[randIterator()], mul:volume}).bang();
+function Note(song, volume) {
+    this.tone = new T('pluck', {freq:song.notes[song.iterator()], mul:volume}).bang();
 
     this.applyDelay = function(_time,_fb,_mix) {
         // Applies Delay to this.tone
@@ -88,17 +86,67 @@ function Note(volume) {
     return this.tone;
 }
 
+function SongAPI(firstSong) {
+    // Class to contain all song operations - change songs, get notes from a song, etc.
+    //  Takes song as input, if none is supplied just play jingle bells
+    this.song = firstSong || jingleBells; // Initial song to play
+    this.allSongs = [jingleBells,pentatonic];
+    this.notesPlayed = 0;
+    this.songsPlayed = 0;
+    var self = this;
+
+    this.getNote = function() {
+        // Pulls note from current song, calls rotate logic
+        var volume = Math.random();
+        var note = new Note(this.song, volume);
+        this.notesPlayed++;
+        this.rotate();
+        return note;
+    };
+
+    this.getNextSong = function() {
+        // Iterates through allSongs to the next song.
+        var next = this.allSongs[++self.songsPlayed % self.allSongs.length];
+        return next;
+    };
+
+    this.getTotalNotes = function() {
+        // Returns total notes in a song (notes * timesPlayed)
+        return self.song.notes.length * self.song.timesPlayed;
+    };
+
+    this.rotate = function() {
+        // Runs song rotation logic - change song everytime previous song finishes alloted number of times.
+        if (self.notesPlayed > self.getTotalNotes()){
+            self.changeSong(self.getNextSong());
+        }
+        return;
+    };
+
+    this.changeSong = function(song) {
+        // Change song to specific song - pass song element, not name.
+        console.log('Changing song to: ' + song.name + ', zeroing out notes');
+        self.song = song;
+        self.notesPlayed = 0;
+        return self.song;
+    };
+
+    return this.song.name;
+}
 
 var atlasTrafficServer = '10.202.108.195';
 var conn = new ReconnectingWebSocket('ws://' + atlasTrafficServer + ':8765');
 
+var songAPI;
+
 conn.onopen = function (ev) {
-  console.log(ev);
-  return;
+    songAPI = new SongAPI();
+    console.log(ev);
+    return;
 };
 
 conn.onmessage = function (ev) {
-    var note = new Note(Math.random());
+    var note = songAPI.getNote();
     note.play();
     console.log(ev);
 };
