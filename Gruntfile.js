@@ -72,7 +72,7 @@ module.exports = function (grunt) {
         open: true,
         livereload: 35727,
         // Change this to '0.0.0.0' to access the server from outside
-        hostname: 'localhost'
+        hostname: process.env.HOST || 'localhost'
       },
       livereload: {
         options: {
@@ -268,7 +268,8 @@ module.exports = function (grunt) {
                 'images/{,*/}*.webp',
                 '{,*/}*.html',
                 'scripts/{,*/}*.js',
-                'styles/**/*'
+                'styles/**/*',
+                'images/**/*'
               ]
           },
           {
@@ -299,7 +300,6 @@ module.exports = function (grunt) {
       ],
       dist: [
         'copy:styles',
-        'imagemin',
         'svgmin'
       ]
     }
