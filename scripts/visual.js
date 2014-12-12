@@ -616,7 +616,7 @@ function SongAPI(firstSong) {
 
     this.getNote = function() {
         // Pulls note from current song, calls rotate logic
-        var volume = Math.random();
+        var volume = Math.random() * 0.7 + 0.3;
         var note = new Note(this.song, volume);
         this.notesPlayed++;
         this.rotate();
